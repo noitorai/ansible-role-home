@@ -1,0 +1,17 @@
+---
+# defaults file for ansible-role-home
+home_git_repo: "ssh://git@github.com:noitorai/dotfiles.git"
+home_user_name: "{{ ansible_user |default('ishii') }}"
+home_user_home_path: "/home/{{ ansible_user }}"
+home_dotfiles_path: "{{ home_user_home_path }}/prj/dotfiles"
+home_use_dotfiles:
+  - ".profile"
+  - ".bashrc"
+  - ".bashrc_local"
+  - ".bash_functions"
+  - ".bash_logout"
+  - ".inputrc"
+  - ".tmux.conf"
+  - "bin/rsync-scr.sh"
+  - "conf/bash_functions.conf.default"
+  - "conf/rsync-scr.conf.default"

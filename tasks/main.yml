@@ -1,0 +1,63 @@
+---
+- name: dotfiles repository should exist at specific path
+  git:
+    repo: "{{ home_git_repo }}"
+    dest: "{{ home_dotfiles_path }}"
+    update: no
+
+- name: required directories should exist
+  file:
+    path: "{{ home_user_home_path }}/{{ item }}"
+    state: directory
+  with_items:
+    - bin
+    - conf
+
+- name: check if files exist
+  stat:
+    path: "{{ home_user_home_path }}/{{ item }}"
+  register: st
+  with_items: "{{ home_use_dotfiles }}"
+
+- name: organize vars
+  set_fact:
+    backup_files: |
+      {% set f = [] %}
+      {% for i in st.results %}
+      {%   if i.stat.isreg is defined %}
+      {%     set _ = f.append({'name': i.item, 'isreg': i.stat.isreg}) %}
+      {%   endif %}
+      {% endfor %}
+      {{ f }}
+
+- debug:
+    var: backup_files
+
+- name: symbolic links to dotfile should exist
+  block:
+  - copy:
+      remote_src: true
+      src: "{{ home_user_home_path }}/{{ item.name }}"
+      dest: "{{ home_user_home_path }}/{{ item.name }}.original"
+      backup: yes
+    loop: "{{ backup_files }}"
+    when: item.isreg
+  - file:
+      path: "{{ home_user_home_path }}/{{ item.name }}"
+      state: absent
+    loop: "{{ backup_files }}"
+    when: item.isreg
+  - file:
+      path: "{{ home_user_home_path }}/{{ item.name }}"
+      src: "{{ home_dotfiles_path }}/{{ item.name }}"
+      #path: "{{ home_user_home_path }}/{{ item.item }}"
+      #src: "{{ home_dotfiles_path }}/{{ item.item }}"
+      state: link
+    loop: "{{ backup_files }}"
+    when:
+      - item.isreg
+      - not ansible_check_mode
+
+
+# TODO: コメントアウトした古いコードを削除
+# TODO: symlink 貼るタスクが check モード時にエラーになる問題への対処
