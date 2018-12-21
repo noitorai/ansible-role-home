@@ -1,5 +1,5 @@
 ---
-- name: dotfiles repository should exist at specific path
+- name: dotfiles repository clone should exist as expected
   git:
     repo: "{{ home_git_repo }}"
     dest: "{{ home_dotfiles_path }}"
@@ -13,51 +13,42 @@
     - bin
     - conf
 
-- name: check if files exist
+- name: check if symbolic links exist as expected
   stat:
     path: "{{ home_user_home_path }}/{{ item }}"
   register: st
   with_items: "{{ home_use_dotfiles }}"
+  changed_when: st.stat.isreg is defined and st.stat.isreg
 
 - name: organize vars
   set_fact:
     backup_files: |
       {% set f = [] %}
       {% for i in st.results %}
-      {%   if i.stat.isreg is defined %}
-      {%     set _ = f.append({'name': i.item, 'isreg': i.stat.isreg}) %}
+      {%   if i.stat.isreg is defined and i.stat.isreg %}
+      {%     set _ = f.append(i.item) %}
       {%   endif %}
       {% endfor %}
       {{ f }}
 
-- debug:
-    var: backup_files
+- name: if regular file exists, it should be backed up
+  copy:
+    remote_src: true
+    src: "{{ home_user_home_path }}/{{ item }}"
+    dest: "{{ home_user_home_path }}/{{ item }}.original"
+    backup: yes
+  loop: "{{ backup_files }}"
 
-- name: symbolic links to dotfile should exist
-  block:
-  - copy:
-      remote_src: true
-      src: "{{ home_user_home_path }}/{{ item.name }}"
-      dest: "{{ home_user_home_path }}/{{ item.name }}.original"
-      backup: yes
-    loop: "{{ backup_files }}"
-    when: item.isreg
-  - file:
-      path: "{{ home_user_home_path }}/{{ item.name }}"
-      state: absent
-    loop: "{{ backup_files }}"
-    when: item.isreg
-  - file:
-      path: "{{ home_user_home_path }}/{{ item.name }}"
-      src: "{{ home_dotfiles_path }}/{{ item.name }}"
-      #path: "{{ home_user_home_path }}/{{ item.item }}"
-      #src: "{{ home_dotfiles_path }}/{{ item.item }}"
-      state: link
-    loop: "{{ backup_files }}"
-    when:
-      - item.isreg
-      - not ansible_check_mode
+- name: delete files that were backed up
+  file:
+    path: "{{ home_user_home_path }}/{{ item }}"
+    state: absent
+  loop: "{{ backup_files }}"
 
-
-# TODO: コメントアウトした古いコードを削除
-# TODO: symlink 貼るタスクが check モード時にエラーになる問題への対処
+- name: symbolic links should exist as expected
+  file:
+    path: "{{ home_user_home_path }}/{{ item }}"
+    src: "{{ home_dotfiles_path }}/{{ item }}"
+    state: link
+  loop: "{{ backup_files }}"
+  when: not ansible_check_mode
