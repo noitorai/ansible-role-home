@@ -18,15 +18,15 @@
     path: "{{ home_user_home_path }}/{{ item }}"
   register: st
   with_items: "{{ home_use_dotfiles }}"
-  changed_when: st.stat.isreg is defined and st.stat.isreg
+  changed_when: not st.stat.exists or (st.stat.isreg is defined and st.stat.isreg)
 
 - name: organize vars
   set_fact:
     backup_files: |
       {% set f = [] %}
       {% for i in st.results %}
-      {%   if i.stat.isreg is defined and i.stat.isreg %}
-      {%     set _ = f.append(i.item) %}
+      {% if not i.stat.exists or (i.stat.isreg is defined and i.stat.isreg) %}
+      {%     set _ = f.append({'name': i.item, 'exists': i.stat.exists, 'isreg': i.stat.isreg}) %}
       {%   endif %}
       {% endfor %}
       {{ f }}
@@ -34,16 +34,18 @@
 - name: if regular file exists, it should be backed up
   copy:
     remote_src: true
-    src: "{{ home_user_home_path }}/{{ item }}"
-    dest: "{{ home_user_home_path }}/{{ item }}.original"
+    src: "{{ home_user_home_path }}/{{ item.name }}"
+    dest: "{{ home_user_home_path }}/{{ item.name }}.original"
     backup: yes
   loop: "{{ backup_files }}"
+  when: item.exists and item.isreg
 
 - name: delete files that were backed up
   file:
     path: "{{ home_user_home_path }}/{{ item }}"
     state: absent
   loop: "{{ backup_files }}"
+  when: item.exists and item.isreg
 
 - name: symbolic links should exist as expected
   file:
