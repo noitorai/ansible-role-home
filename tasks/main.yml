@@ -26,7 +26,7 @@
       {% set f = [] %}
       {% for i in st.results %}
       {% if not i.stat.exists or (i.stat.isreg is defined and i.stat.isreg) %}
-      {%     set _ = f.append({'name': i.item, 'exists': i.stat.exists, 'isreg': i.stat.isreg}) %}
+      {%     set _ = f.append({'name': i.item, 'exists': i.stat.exists, 'isreg': i.stat.isreg|default(false)}) %}
       {%   endif %}
       {% endfor %}
       {{ f }}
@@ -42,15 +42,15 @@
 
 - name: delete files that were backed up
   file:
-    path: "{{ home_user_home_path }}/{{ item }}"
+    path: "{{ home_user_home_path }}/{{ item.name }}"
     state: absent
   loop: "{{ backup_files }}"
   when: item.exists and item.isreg
 
 - name: symbolic links should exist as expected
   file:
-    path: "{{ home_user_home_path }}/{{ item }}"
-    src: "{{ home_dotfiles_path }}/{{ item }}"
+    path: "{{ home_user_home_path }}/{{ item.name }}"
+    src: "{{ home_dotfiles_path }}/{{ item.name }}"
     state: link
   loop: "{{ backup_files }}"
   when: not ansible_check_mode
