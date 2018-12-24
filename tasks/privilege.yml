@@ -1,11 +1,11 @@
 ---
-- name: install python-apt
+- name: python-apt should be installed
   apt:
     name: "python-apt"
     state: present
     update_cache: yes
 
-- name: install required {{ item }}
+- name: required packages should be installed
   apt:
     name: "{{ item }}"
     state: present
