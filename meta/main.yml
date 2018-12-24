@@ -1,4 +1,4 @@
-alaxy_info:
+galaxy_info:
   role_name: home
   author: noitorai
   description: ansible role for home directory
