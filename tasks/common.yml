@@ -1,0 +1,56 @@
+---
+- name: dotfiles repository clone should exist as expected
+  git:
+    repo: "{{ home_git_repo }}"
+    dest: "{{ home_dotfiles_path }}"
+    update: no
+
+- name: required directories should exist
+  file:
+    path: "{{ home_user_home_path }}/{{ item }}"
+    state: directory
+  with_items:
+    - bin
+    - conf
+
+- name: check if symbolic links exist as expected
+  stat:
+    path: "{{ home_user_home_path }}/{{ item }}"
+  register: st
+  with_items: "{{ home_use_dotfiles }}"
+  changed_when: not st.stat.exists or (st.stat.isreg is defined and st.stat.isreg)
+
+- name: organize vars
+  set_fact:
+    backup_files: |
+      {% set f = [] %}
+      {% for i in st.results %}
+      {% if not i.stat.exists or (i.stat.isreg is defined and i.stat.isreg) %}
+      {%     set _ = f.append({'name': i.item, 'exists': i.stat.exists, 'isreg': i.stat.isreg|default(false)}) %}
+      {%   endif %}
+      {% endfor %}
+      {{ f }}
+
+- name: if regular file exists, it should be backed up
+  copy:
+    remote_src: true
+    src: "{{ home_user_home_path }}/{{ item.name }}"
+    dest: "{{ home_user_home_path }}/{{ item.name }}.original"
+    backup: yes
+  loop: "{{ backup_files }}"
+  when: item.exists and item.isreg
+
+- name: delete files that were backed up
+  file:
+    path: "{{ home_user_home_path }}/{{ item.name }}"
+    state: absent
+  loop: "{{ backup_files }}"
+  when: item.exists and item.isreg
+
+- name: symbolic links should exist as expected
+  file:
+    path: "{{ home_user_home_path }}/{{ item.name }}"
+    src: "{{ home_dotfiles_path }}/{{ item.name }}"
+    state: link
+  loop: "{{ backup_files }}"
+  when: not ansible_check_mode
