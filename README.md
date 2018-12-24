@@ -1,6 +1,8 @@
 Ansible Role: home
 ==================
 
+[![Build Status](https://travis-ci.org/noitorai/ansible-role-home.svg?branch=master)](https://travis-ci.org/noitorai/ansible-role-home)
+
 自分の home 環境を構築するためのロールです。
 
 Requirements
