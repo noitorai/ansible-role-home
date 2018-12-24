@@ -1,5 +1,8 @@
 ---
 - hosts: localhost
   remote_user: root
+  become: yes
+  vars:
+    - home_privilege_mode: yes
   roles:
     - ansible-role-home
