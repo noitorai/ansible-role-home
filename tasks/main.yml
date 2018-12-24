@@ -1,4 +1,6 @@
 ---
+- include_tasks: privilege.yml
+  when: home_privilege_mode
 
 - include_tasks: common.yml
   become: no

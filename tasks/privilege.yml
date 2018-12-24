@@ -1,0 +1,15 @@
+---
+- name: install python-apt
+  apt:
+    name: "python-apt"
+    state: present
+    update_cache: yes
+
+- name: install required {{ item }}
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    - "cmigemo"
+    - "tree"

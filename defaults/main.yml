@@ -1,5 +1,6 @@
 ---
 # defaults file for ansible-role-home
+home_privilege_mode: no
 home_git_repo: "https://github.com/noitorai/dotfiles.git"
 home_user_name: "{{ ansible_user |default('ishii') }}"
 home_user_home_path: "/home/{{ ansible_user }}"
