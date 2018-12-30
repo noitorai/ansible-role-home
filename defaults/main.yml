@@ -1,9 +1,9 @@
 ---
 # defaults file for ansible-role-home
 home_privilege_mode: no
-home_git_repo: "https://github.com/noitorai/dotfiles.git"
 home_user_name: "{{ ansible_user |default('ishii') }}"
 home_user_home_path: "/home/{{ ansible_user }}"
+home_dotfiles_git_repo: "https://github.com/noitorai/dotfiles.git"
 home_dotfiles_path: "{{ home_user_home_path }}/prj/dotfiles"
 home_use_dotfiles:
   - ".profile"
@@ -16,3 +16,6 @@ home_use_dotfiles:
   - "bin/rsync-scr.sh"
   - "conf/bash_functions.conf.default"
   - "conf/rsync-scr.conf.default"
+home_dotemacs_git_repo: "https://gitlab.soum.co.jp/ishii/dotemacs.git"
+home_dotemacs_path: "{{ home_user_home_path }}/prj/dotemacs"
+home_dotemacs_dirname: ".emacs.d"

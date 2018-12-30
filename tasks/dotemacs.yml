@@ -1,0 +1,33 @@
+- name: "set variables for dotemacs"
+  set_fact:
+    title: "<dotemacs>"
+  tags: wip
+
+- name: "{{ title }} repository clone should exist as expected"
+  git:
+    repo: "{{ home_dotemacs_git_repo }}"
+    dest: "{{ home_dotemacs_path }}"
+    update: no
+
+- name: "{{ title }} check if symbolic links exist as expected"
+  stat:
+    path: "{{ home_user_home_path }}/{{ home_dotemacs_dirname }}"
+  register: st
+  changed_when: not st.stat.exists or (st.stat.isdir is defined and st.stat.isdir)
+  tags: wip
+
+- name: "{{ title }} if regular file exists, it should be backed up"
+  command: |
+        mv {{ home_user_home_path }}/{{ home_dotemacs_dirname }} \
+           {{ home_user_home_path }}/{{ home_dotemacs_dirname }}.original
+  when: st.stat.exists and st.stat.isdir
+  check_mode: no
+  tags: wip
+
+- name: "{{ title }} symbolic links should exist as expected"
+  file:
+    path: "{{ home_user_home_path }}/{{ home_dotemacs_dirname }}"
+    src: "{{ home_dotemacs_path }}/{{ home_dotemacs_dirname }}"
+    state: link
+  when: not ansible_check_mode
+  tags: wip

@@ -1,6 +1,13 @@
 ---
-- include_tasks: privilege.yml
+- import_tasks: privilege.yml
+  tags: privilege
   when: home_privilege_mode
+  become: yes
 
-- include_tasks: common.yml
+- import_tasks: common.yml
+  tags: common
+  become: no
+
+- import_tasks: dotemacs.yml
+  tags: dotemacs
   become: no

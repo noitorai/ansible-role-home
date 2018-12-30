@@ -1,7 +1,7 @@
 ---
 - name: dotfiles repository clone should exist as expected
   git:
-    repo: "{{ home_git_repo }}"
+    repo: "{{ home_dotfiles_git_repo }}"
     dest: "{{ home_dotfiles_path }}"
     update: no
 
