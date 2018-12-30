@@ -4,8 +4,8 @@
   when: home_privilege_mode
   become: yes
 
-- import_tasks: common.yml
-  tags: common
+- import_tasks: dotfiles.yml
+  tags: dotfiles
   become: no
 
 - import_tasks: dotemacs.yml
