@@ -27,7 +27,7 @@
 - name: "{{ title }} symbolic links should exist as expected"
   file:
     path: "{{ home_user_home_path }}/{{ home_dotemacs_dirname }}"
-    src: "{{ home_dotemacs_path }}/{{ home_dotemacs_dirname }}"
+    src: "{{ home_dotemacs_path }}"
     state: link
   when: not ansible_check_mode
   tags: wip
